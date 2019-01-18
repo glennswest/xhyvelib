@@ -38,6 +38,7 @@
 #include <xhyve/vmm/vmm_ktr.h>
 #include <xhyve/vmm/io/vioapic.h>
 #include <xhyve/vmm/io/vlapic.h>
+#include <os/lock.h>
 
 #define	IOREGSEL	0x00
 #define	IOWIN		0x10
@@ -49,7 +50,7 @@
 #pragma clang diagnostic ignored "-Wpadded"
 struct vioapic {
 	struct vm *vm;
-	OSSpinLock lock;
+        os_unfair_lock lock;
 	uint32_t id;
 	uint32_t ioregsel;
 	struct {
@@ -59,9 +60,9 @@ struct vioapic {
 };
 #pragma clang diagnostic pop
 
-#define VIOAPIC_LOCK_INIT(v) (v)->lock = OS_SPINLOCK_INIT;
-#define VIOAPIC_LOCK(v) OSSpinLockLock(&(v)->lock)
-#define VIOAPIC_UNLOCK(v) OSSpinLockUnlock(&(v)->lock)
+#define VIOAPIC_LOCK_INIT(v) (v)->lock = OS_UNFAIR_LOCK_INIT;
+#define VIOAPIC_LOCK(v) os_unfair_lock_lock((&(v)->lock))
+#define VIOAPIC_UNLOCK(v) os_unfair_lock_unlock(&(v)->lock)
 
 #define	VIOAPIC_CTR1(vioapic, fmt, a1) \
 	VM_CTR1((vioapic)->vm, fmt, a1)

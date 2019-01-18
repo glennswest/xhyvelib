@@ -29,7 +29,6 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <assert.h>
-#include <os/lock.h>
 #include <libkern/OSAtomic.h>
 #include <xhyve/support/misc.h>
 #include <xhyve/support/i8259.h>
@@ -39,8 +38,9 @@
 #include <xhyve/vmm/io/vatpic.h>
 #include <xhyve/vmm/io/vioapic.h>
 
-#define VATPIC_LOCK_INIT(v) (v)->lock = OS_UNFAIR_LOCK_INIT;
-#define VATPIC_LOCK(v) os_unfair_lock((&(v)->lock)
+#include <os/lock.h>
+#define VATPIC_LOCK_INIT(v) (v)->lock = OS_UNFAIR_LOCK_INIT
+#define VATPIC_LOCK(v) os_unfair_lock_lock((&(v)->lock))
 #define VATPIC_UNLOCK(v) os_unfair_lock_unlock(&(v)->lock)
 
 enum irqstate {
